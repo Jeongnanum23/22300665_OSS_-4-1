@@ -1,11 +1,231 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title></title>
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    <style>
+        h1 {
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 10px;
+        }
+
+        .form-group label {
+            display: block;
+        }
+
+        .form-group input {
+            padding: 5px;
+            width: 100%;
+            max-width: 200px;
+            margin-bottom: 10px;
+        }
+
+        button {
+            padding: 5px 10px;
+            font-size: 14px;
+            margin-right: 5px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+        #div_students .student-item {
+            margin-top: 5px;
+            padding: 5px;
+            border: 1px solid #eee;
+        }
+
+        
+        .modal {
+            display: none; 
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+        .modal .modal_popup {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px;
+            background: #ffffff;
+            border-radius: 20px;
+            width: 300px;
+        }
+        .modal .modal_popup .close_btn {
+            padding: 10px;
+            background-color: rgb(116, 0, 0);
+            border: none;
+            border-radius: 5px;
+            color: #fff;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+    </style>
 </head>
 <body>
-    
+
+    <h1>Friend List</h1>
+
+    <div class="form-group">
+        <label for="student_id">ID</label>
+        <input type="text" id="student_id" /> 
+    </div>
+
+    <button onclick="getDataFromJSONFile()">데이터 목록 보기</button>
+
+   
+    <div class="modal" id="dataModal">
+        <div class="modal_popup">
+            <h3 id="modalTitle">데이터 추가/수정</h3>
+            <div class="form-group">
+                <label for="student_id2">ID (수정할 때만 필요)</label>
+                <input type="text" id="student_id2" style="display: none;" /> <!-- 수정 모드용 ID 필드 -->
+            </div>
+            <div class="form-group">
+                <label for="student_name">이름</label>
+                <input type="text" id="student_name" />
+            </div>
+            <div class="form-group">
+                <label for="student_age">나이</label>
+                <input type="number" id="student_age" />
+            </div>
+            <div class="form-group">
+                <label for="student_rc">RC</label>
+                <input type="text" id="student_rc" />
+            </div>
+            <button onclick="createDataToJSONFile()" id="saveButton">데이터 추가</button>
+            <button onclick="updateDataToJSONFile()" id="updateButton" style="display: none;">데이터 수정</button>
+            <button class="close_btn" onclick="closeModal()">닫기</button>
+        </div>
+    </div>
+
+    <button onclick="openModal('add')">데이터 추가</button>
+    <button onclick="openModal('update')">데이터 수정</button>
+    <button onclick="deleteDataToJSONFile()">데이터 삭제</button>
+
+    <div id="div_students"></div>
+
+    <script>
+        function openModal(mode) {
+            const modal = document.getElementById('dataModal');
+            const saveButton = document.getElementById('saveButton');
+            const updateButton = document.getElementById('updateButton');
+            const modalTitle = document.getElementById('modalTitle');
+            const studentIdField = document.getElementById('student_id');
+            const studentIdField2 = document.getElementById('student_id2'); // 수정 모드용 ID 필드
+
+            if (mode === 'add') {
+                modalTitle.innerText = '데이터 추가';
+                saveButton.style.display = 'block';
+                updateButton.style.display = 'none';
+                studentIdField.style.display = 'block'; 
+                studentIdField2.style.display = 'none'; 
+                clearInputs();
+            } else if (mode === 'update') {
+                modalTitle.innerText = '데이터 수정';
+                saveButton.style.display = 'none';
+                updateButton.style.display = 'block';
+                studentIdField.style.display = 'none'; 
+                studentIdField2.style.display = 'block';
+                clearInputs(); 
+            }
+
+            modal.style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('dataModal').style.display = 'none';
+        }
+
+        function clearInputs() {
+            $("#student_name").val('');
+            $("#student_age").val('');
+            $("#student_rc").val('');
+            $("#student_id").val('');
+            $("#student_id2").val('');
+        }
+
+        function getDataFromJSONFile() {
+            const xhr = new XMLHttpRequest();
+            xhr.open("GET", "https://6729c63f6d5fa4901b6e4b0c.mockapi.io/assignment_4/friend_list");
+            xhr.send();
+            xhr.onload = () => {
+                if (xhr.status === 200) {
+                    $("#div_students").html("");
+                    let students = JSON.parse(xhr.response);
+                    students.forEach((item) => {
+                        $("#div_students").append("<div class='student-item'>" + item.id + " - " + item.name + "</div>");
+                    });
+                }
+            }
+        }
+
+        function createDataToJSONFile() {
+            const xhr = new XMLHttpRequest();
+            xhr.open("POST", "https://6729c63f6d5fa4901b6e4b0c.mockapi.io/assignment_4/friend_list");
+            xhr.setRequestHeader("content-type", "application/json");
+
+            let data = {
+                name: $("#student_name").val(),
+                age: $("#student_age").val(),
+                rc: $("#student_rc").val()
+            };
+
+            xhr.send(JSON.stringify(data));
+            xhr.onload = () => {
+                if (xhr.status === 201) {
+                    alert("추가 성공!");
+                    closeModal();
+                    getDataFromJSONFile();
+                }
+            }
+        }
+
+        function updateDataToJSONFile() {
+            let id = $("#student_id2").val(); 
+            const xhr = new XMLHttpRequest();
+            xhr.open("PUT", "https://6729c63f6d5fa4901b6e4b0c.mockapi.io/assignment_4/friend_list/" + id);
+            xhr.setRequestHeader("content-type", "application/json");
+
+            let data = {
+                name: $("#student_name").val(),
+                age: $("#student_age").val(),
+                rc: $("#student_rc").val()
+            };
+
+            xhr.send(JSON.stringify(data));
+            xhr.onload = () => {
+                if (xhr.status === 200) {
+                    alert("수정 성공!");
+                    closeModal();
+                    getDataFromJSONFile();
+                }
+            }
+        }
+
+        function deleteDataToJSONFile() {
+            let id = $("#student_id").val();
+            const xhr = new XMLHttpRequest();
+            xhr.open("DELETE", "https://6729c63f6d5fa4901b6e4b0c.mockapi.io/assignment_4/friend_list/" + id);
+            xhr.send();
+            xhr.onload = () => {
+                if (xhr.status === 200) {
+                    alert("삭제 성공!");
+                    getDataFromJSONFile();
+                }
+            }
+        }
+    </script>
+
 </body>
 </html>
