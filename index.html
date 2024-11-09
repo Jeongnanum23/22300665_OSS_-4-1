@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title></title>
+    <title>Friend List</title>
     <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
     <style>
         h1 {
@@ -40,7 +40,6 @@
             border: 1px solid #eee;
         }
 
-        
         .modal {
             display: none; 
             position: fixed;
@@ -83,13 +82,12 @@
 
     <button onclick="getDataFromJSONFile()">데이터 목록 보기</button>
 
-   
     <div class="modal" id="dataModal">
         <div class="modal_popup">
             <h3 id="modalTitle">데이터 추가/수정</h3>
             <div class="form-group">
                 <label for="student_id2">ID (수정할 때만 필요)</label>
-                <input type="text" id="student_id2" style="display: none;" /> <!-- 수정 모드용 ID 필드 -->
+                <input type="text" id="student_id2" style="display: none;" />
             </div>
             <div class="form-group">
                 <label for="student_name">이름</label>
@@ -122,13 +120,13 @@
             const updateButton = document.getElementById('updateButton');
             const modalTitle = document.getElementById('modalTitle');
             const studentIdField = document.getElementById('student_id');
-            const studentIdField2 = document.getElementById('student_id2'); // 수정 모드용 ID 필드
+            const studentIdField2 = document.getElementById('student_id2');
 
             if (mode === 'add') {
                 modalTitle.innerText = '데이터 추가';
                 saveButton.style.display = 'block';
                 updateButton.style.display = 'none';
-                studentIdField.style.display = 'block'; 
+                studentIdField.style.display = 'block';  // 'add' 모드에서 student_id를 보이게 설정
                 studentIdField2.style.display = 'none'; 
                 clearInputs();
             } else if (mode === 'update') {
@@ -145,6 +143,7 @@
 
         function closeModal() {
             document.getElementById('dataModal').style.display = 'none';
+            document.getElementById('student_id').style.display = 'block'; // 모달을 닫을 때 student_id 필드를 보이도록 설정
         }
 
         function clearInputs() {
@@ -187,11 +186,8 @@
                     alert("추가 성공!");
                     closeModal();
                     getDataFromJSONFile();
-
-                    $("#student_id").show();
                 }
             }
-            
         }
 
         function updateDataToJSONFile() {
